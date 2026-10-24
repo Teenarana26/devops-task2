@@ -28,32 +28,33 @@ pipeline {
         stage('Build') {
             steps {
                 echo 'Building Docker image...'
-                sh 'docker build -t ${IMAGE_NAME}:${BUILD_NUMBER} -t ${IMAGE_NAME}:latest .'
+                bat 'docker build -t %IMAGE_NAME%:%BUILD_NUMBER% -t %IMAGE_NAME%:latest .'
             }
         }
 
         stage('Test') {
             steps {
                 echo 'Running unit tests inside the container...'
-                sh 'docker run --rm ${IMAGE_NAME}:${BUILD_NUMBER} npm test'
+                bat 'docker run --rm %IMAGE_NAME%:%BUILD_NUMBER% npm test'
             }
         }
 
         stage('Deploy') {
             steps {
                 echo 'Deploying container...'
-                sh '''
-                    docker rm -f ${CONTAINER_NAME} || true
-                    docker run -d --name ${CONTAINER_NAME} -p ${APP_PORT}:3000 ${IMAGE_NAME}:${BUILD_NUMBER}
+                bat '''
+                    docker rm -f %CONTAINER_NAME%
+                    docker run -d --name %CONTAINER_NAME% -p %APP_PORT%:3000 %IMAGE_NAME%:%BUILD_NUMBER%
+                    exit /b 0
                 '''
             }
         }
 
         stage('Verify') {
             steps {
-                sh '''
-                    sleep 3
-                    curl -f http://localhost:${APP_PORT}/health
+                bat '''
+                    ping -n 5 127.0.0.1 > nul
+                    curl -f http://localhost:%APP_PORT%/health
                 '''
             }
         }
@@ -62,6 +63,6 @@ pipeline {
     post {
         success { echo "Build #${env.BUILD_NUMBER} deployed successfully." }
         failure { echo "Build #${env.BUILD_NUMBER} failed. Check the console output." }
-        always  { sh 'docker image prune -f || true' }
     }
 }
+
