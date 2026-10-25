@@ -5,6 +5,7 @@ pipeline {
         IMAGE_NAME     = 'jenkins-cicd-demo'
         CONTAINER_NAME = 'jenkins-cicd-demo'
         APP_PORT       = '3000'
+        PATH           = "C:\\Program Files\\Docker\\Docker\\resources\\bin;${env.PATH}"
     }
 
     // Trigger on each commit: GitHub webhook (instant) with SCM polling as a fallback
